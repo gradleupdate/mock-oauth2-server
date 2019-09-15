@@ -99,7 +99,7 @@ class AuthController(private val state: State) {
     }
 
     companion object {
-        private val SECRET_KEY = "SecretSigningKey"
+        private const val SECRET_KEY = "SecretSigningKey"
 
         private fun createJWT(id: String, subject: String) = Jwts.builder()
                 .setId(id)
