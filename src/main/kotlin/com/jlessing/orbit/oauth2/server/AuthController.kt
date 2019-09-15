@@ -22,22 +22,26 @@ import javax.validation.constraints.NotEmpty
 import javax.xml.bind.DatatypeConverter
 import kotlin.random.Random
 
-
 @RestController
-class WebController(private val state: State) {
+class AuthController(private val state: State) {
 
     @GetMapping("/dialog/oauth")
-    @Valid
-    fun dialog(@NotEmpty response_type: String, @NotEmpty client_id: String, @NotEmpty scope: String, @NotEmpty state: String, @NotEmpty redirect_uri: String): ResponseEntity<Unit> {
-        if (response_type != "code") throw HttpClientErrorException(HttpStatus.BAD_REQUEST, "response_type must be 'code'")
+    fun dialog(response_type: String?, client_id: String?, scope: String?, state: String?, redirect_uri: String?): ResponseEntity<Unit> {
+        if (response_type == null) throw BadRequesException("Missing parameter response_type")
+        if (client_id == null) throw BadRequesException("Missing parameter client_id")
+        if (scope == null) throw BadRequesException("Missing parameter scope")
+        if (state == null) throw BadRequesException("Missing parameter state")
+        if (redirect_uri == null) throw BadRequesException("Missing parameter redirect_uri")
+
+        if (response_type != "code") throw BadRequesException("response_type must be 'code'")
 
         val appRegistration = this.state.appRegistrations.firstOrNull { it.clientId == client_id }
-                ?: throw HttpClientErrorException(HttpStatus.BAD_REQUEST, "Unknown client_id")
-        if (!appRegistration.redirectUrls.contains(redirect_uri.trim())) throw HttpClientErrorException(HttpStatus.BAD_REQUEST, "Invalid redirect_uri")
+                ?: throw BadRequesException("Unknown client_id")
+        if (!appRegistration.redirectUrls.contains(redirect_uri!!.trim())) throw BadRequesException("Invalid redirect_uri")
 
-        val scopes = scope.split(" ")
-        if (!scopes.contains("user:email")) throw HttpClientErrorException(HttpStatus.BAD_REQUEST, "Missing scope 'user:email'")
-        if (!scopes.contains("read:user")) throw HttpClientErrorException(HttpStatus.BAD_REQUEST, "Missing scope 'read:user'")
+        val scopes = scope!!.split(" ")
+        if (!scopes.contains("user:email")) throw BadRequesException("Missing scope 'user:email'")
+        if (!scopes.contains("read:user")) throw BadRequesException("Missing scope 'read:user'")
 
         val code = (1..40).map { Random.nextInt(0, 62) }
                 .map((('a'..'z') + ('A'..'Z') + ('0'..'9'))::get)
@@ -48,26 +52,29 @@ class WebController(private val state: State) {
     }
 
     @PostMapping("/oauth/access_token")
-    @Valid
-    fun accessToken(httpServletRequest: HttpServletRequest, @NotEmpty grant_type: String, @NotEmpty code: String, @NotEmpty redirect_uri: String, client_id: String?, client_secret: String?): ResponseEntity<*> {
-        if (grant_type != "code") throw HttpClientErrorException(HttpStatus.BAD_REQUEST, "grant_type must be 'code'")
+    fun accessToken(httpServletRequest: HttpServletRequest, grant_type: String?,  code: String?,  redirect_uri: String?, client_id: String?, client_secret: String?): ResponseEntity<*> {
+        if (grant_type == null) throw BadRequesException("Missing parameter grant_type")
+        if (code == null) throw BadRequesException("Missing parameter code")
+        if (redirect_uri == null) throw BadRequesException("Missing parameter redirect_uri")
+
+        if (grant_type != "code") throw BadRequesException("grant_type must be 'code'")
 
         val clientIdVal = client_id
-                ?: if (httpServletRequest.authType == HttpServletRequest.BASIC_AUTH)
+                ?: if (httpServletRequest.getHeader("Authorization").trim().toLowerCase().startsWith("basic"))
                     String(Base64.getDecoder().decode(httpServletRequest.getHeader("Authorization").trim().substring(5).trim()), StandardCharsets.UTF_8).let { it.substring(0, it.indexOf(":")) }
-                else throw HttpClientErrorException(HttpStatus.BAD_REQUEST, "Missing client_id")
+                else throw BadRequesException("Missing client_id")
 
         val clientSecretVal = client_secret
-                ?: if (httpServletRequest.authType == HttpServletRequest.BASIC_AUTH)
+                ?: if (httpServletRequest.getHeader("Authorization").trim().toLowerCase().startsWith("basic"))
                     String(Base64.getDecoder().decode(httpServletRequest.getHeader("Authorization").trim().substring(5).trim()), StandardCharsets.UTF_8).let { it.substring(it.indexOf(":") + 1) }
-                else throw HttpClientErrorException(HttpStatus.BAD_REQUEST, "Missing client_secret")
+                else throw BadRequesException("Missing client_secret")
 
         val appRegistration = this.state.appRegistrations.firstOrNull { it.clientId == clientIdVal }
-                ?: throw HttpClientErrorException(HttpStatus.BAD_REQUEST, "Unknown client_id")
+                ?: throw BadRequesException("Unknown client_id")
 
-        if (appRegistration.clientSecret != clientSecretVal) throw HttpClientErrorException(HttpStatus.BAD_REQUEST, "Invalid client_secret")
-        if (!appRegistration.redirectUrls.contains(redirect_uri)) throw HttpClientErrorException(HttpStatus.BAD_REQUEST, "Invalid redirect_uri")
-        if (!appRegistration.validCodes.keys.contains(code)) throw HttpClientErrorException(HttpStatus.BAD_REQUEST, "Invalid code")
+        if (appRegistration.clientSecret != clientSecretVal) throw BadRequesException("Invalid client_secret")
+        if (!appRegistration.redirectUrls.contains(redirect_uri)) throw BadRequesException("Invalid redirect_uri")
+        if (!appRegistration.validCodes.keys.contains(code)) throw BadRequesException("Invalid code")
 
         return ResponseEntity.ok()
                 .contentType(MediaType.APPLICATION_JSON_UTF8)

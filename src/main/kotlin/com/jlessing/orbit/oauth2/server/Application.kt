@@ -2,17 +2,15 @@ package com.jlessing.orbit.oauth2.server
 
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.runApplication
+import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Component
-import java.nio.charset.StandardCharsets
-import java.util.*
+import org.springframework.web.bind.annotation.ResponseStatus
+import org.springframework.web.client.HttpClientErrorException
 
 @SpringBootApplication
 class Application
 
 fun main(args: Array<String>) {
-    println(String(Base64.getDecoder().decode("Basic VXNlcjpQYXN3b3Jk".trim().substring(5).trim()), StandardCharsets.UTF_8).let { it.substring(0, it.indexOf(":")) })
-    println(String(Base64.getDecoder().decode("Basic VXNlcjpQYXN3b3Jk".trim().substring(5).trim()), StandardCharsets.UTF_8).let { it.substring(it.indexOf(":") + 1) })
-    System.exit(2)
     runApplication<Application>(*args)
 }
 
@@ -45,3 +43,6 @@ data class State(
         val users: MutableList<User> = arrayListOf(User.DEFAULT_USER),
         val appRegistrations: MutableList<AppRegistration> = arrayListOf()
 )
+
+@ResponseStatus(HttpStatus.BAD_REQUEST)
+class BadRequesException(msg: String) : HttpClientErrorException(HttpStatus.BAD_REQUEST, msg)
