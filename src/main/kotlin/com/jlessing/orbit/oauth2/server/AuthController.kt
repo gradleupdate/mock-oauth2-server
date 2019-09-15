@@ -10,15 +10,12 @@ import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
-import org.springframework.web.client.HttpClientErrorException
 import org.springframework.web.client.HttpServerErrorException
 import java.net.URI
 import java.nio.charset.StandardCharsets
 import java.util.*
 import javax.crypto.spec.SecretKeySpec
 import javax.servlet.http.HttpServletRequest
-import javax.validation.Valid
-import javax.validation.constraints.NotEmpty
 import javax.xml.bind.DatatypeConverter
 import kotlin.random.Random
 
@@ -52,7 +49,7 @@ class AuthController(private val state: State) {
     }
 
     @PostMapping("/oauth/access_token")
-    fun accessToken(httpServletRequest: HttpServletRequest, grant_type: String?,  code: String?,  redirect_uri: String?, client_id: String?, client_secret: String?): ResponseEntity<*> {
+    fun accessToken(httpServletRequest: HttpServletRequest, grant_type: String?, code: String?, redirect_uri: String?, client_id: String?, client_secret: String?): ResponseEntity<*> {
         if (grant_type == null) throw BadRequesException("Missing parameter grant_type")
         if (code == null) throw BadRequesException("Missing parameter code")
         if (redirect_uri == null) throw BadRequesException("Missing parameter redirect_uri")
@@ -80,13 +77,13 @@ class AuthController(private val state: State) {
                 .contentType(MediaType.APPLICATION_JSON_UTF8)
                 .body(ObjectMapper().writeValueAsString(mapOf(
                         Pair("token_type", "Bearer"),
-                        Pair("access_token", createJWT(UUID.randomUUID().toString(), "Me", this.state.activeUser.id.toString()))
+                        Pair("access_token", createJWT(UUID.randomUUID().toString(), this.state.activeUser.id.toString()))
                 )))
     }
 
     @GetMapping("/me")
     fun me(httpServletRequest: HttpServletRequest): ResponseEntity<*> = ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON_UTF8).body(ObjectMapper().writeValueAsString(
-            this.state.users.firstOrNull { it.id.toString() == decodeJWT(httpServletRequest.getHeader("Authorization").substring(5).trim()).subject }
+            this.state.users.firstOrNull { it.id.toString() == decodeJWT(httpServletRequest.getHeader("Authorization").substring(6).trim()).subject }
                     ?: throw HttpServerErrorException(HttpStatus.INTERNAL_SERVER_ERROR, "User with Id<${decodeJWT(httpServletRequest.getHeader("Authorization").substring(5).trim()).subject}> not found")
     ))
 
@@ -104,11 +101,11 @@ class AuthController(private val state: State) {
     companion object {
         private val SECRET_KEY = "SecretSigningKey"
 
-        private fun createJWT(id: String, issuer: String, subject: String) = Jwts.builder()
+        private fun createJWT(id: String, subject: String) = Jwts.builder()
                 .setId(id)
                 .setIssuedAt(Date(System.currentTimeMillis()))
                 .setSubject(subject)
-                .setIssuer(issuer)
+                .setIssuer("Me")
                 .signWith(
                         SignatureAlgorithm.HS256,
                         SecretKeySpec(
