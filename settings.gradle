@@ -1,0 +1,4 @@
+include 'intTest'
+
+rootProject.name = 'mock-oauth2-server'
+rootProject.getChildren().forEach { it.name = rootProject.name + '-' + it.name }
