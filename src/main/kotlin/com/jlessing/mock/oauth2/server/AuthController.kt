@@ -1,4 +1,4 @@
-package com.jlessing.orbit.oauth2.server
+package com.jlessing.mock.oauth2.server
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import io.jsonwebtoken.Jwts
@@ -16,7 +16,6 @@ import java.nio.charset.StandardCharsets
 import java.util.*
 import javax.crypto.spec.SecretKeySpec
 import javax.servlet.http.HttpServletRequest
-import javax.xml.bind.DatatypeConverter
 import kotlin.random.Random
 
 @RestController
@@ -34,9 +33,9 @@ class AuthController(private val state: State) {
 
         val appRegistration = this.state.appRegistrations.firstOrNull { it.clientId == client_id }
                 ?: throw BadRequesException("Unknown client_id")
-        if (!appRegistration.redirectUrls.contains(redirect_uri!!.trim())) throw BadRequesException("Invalid redirect_uri")
+        if (!appRegistration.redirectUrls.contains(redirect_uri.trim())) throw BadRequesException("Invalid redirect_uri")
 
-        val scopes = scope!!.split(" ")
+        val scopes = scope.split(" ")
         if (!scopes.contains("user:email")) throw BadRequesException("Missing scope 'user:email'")
         if (!scopes.contains("read:user")) throw BadRequesException("Missing scope 'read:user'")
 
@@ -87,17 +86,6 @@ class AuthController(private val state: State) {
                     ?: throw HttpServerErrorException(HttpStatus.INTERNAL_SERVER_ERROR, "User with Id<${decodeJWT(httpServletRequest.getHeader("Authorization").substring(5).trim()).subject}> not found")
     ))
 
-
-    @RequestMapping("/**")
-    fun test(httpServletRequest: HttpServletRequest) {
-        println()
-        println(httpServletRequest.method)
-        println(httpServletRequest.requestURI)
-        println(httpServletRequest.parameterMap.entries.map { it.key.toString() + ": " + it.value.joinToString(", ") }.joinToString("\n"))
-        println(httpServletRequest.inputStream.bufferedReader().use { it.readText() })
-        println()
-    }
-
     companion object {
         private const val SECRET_KEY = "SecretSigningKey"
 
@@ -109,13 +97,13 @@ class AuthController(private val state: State) {
                 .signWith(
                         SignatureAlgorithm.HS256,
                         SecretKeySpec(
-                                DatatypeConverter.parseBase64Binary(SECRET_KEY),
+                                SECRET_KEY.toByteArray(StandardCharsets.UTF_8),
                                 SignatureAlgorithm.HS256.jcaName
                         )
                 ).compact()
 
         private fun decodeJWT(jwt: String) = Jwts.parser()
-                .setSigningKey(DatatypeConverter.parseBase64Binary(SECRET_KEY))
+                .setSigningKey(SECRET_KEY.toByteArray(StandardCharsets.UTF_8))
                 .parseClaimsJws(jwt).body
 
     }

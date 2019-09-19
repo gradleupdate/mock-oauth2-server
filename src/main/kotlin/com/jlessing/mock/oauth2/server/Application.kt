@@ -1,7 +1,5 @@
-package com.jlessing.orbit.oauth2.server
+package com.jlessing.mock.oauth2.server
 
-import io.jsonwebtoken.Jwt
-import io.jsonwebtoken.Jwts
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.runApplication
 import org.springframework.http.HttpStatus
