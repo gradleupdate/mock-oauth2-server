@@ -12,10 +12,11 @@ before_script:
   - ./gradlew assemble
 script:
   - ./gradlew check
+  - ./gradlew downloadOpenAPI
 deploy:
   provider: pages
   skip_cleanup: true
   github_token: $GITHUB_TOKEN  # Set in the settings page of your repository, as a secure variable
-  local_dir: test
+  local_dir: build/generated-pages
   on:
     branch: master

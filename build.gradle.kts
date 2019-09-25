@@ -1,4 +1,8 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+import java.net.HttpURLConnection
+import java.net.URL
+import java.nio.file.Files
+import java.nio.file.StandardCopyOption
 
 repositories {
     mavenCentral()
@@ -6,7 +10,6 @@ repositories {
 
 plugins {
     kotlin("jvm") version "1.3.41"
-    id("org.asciidoctor.jvm.convert") version "2.3.0"
     kotlin("plugin.jpa") version "1.3.41"
     id("org.springframework.boot") version "2.1.6.RELEASE"
     kotlin("plugin.spring") version "1.3.41"
@@ -48,5 +51,19 @@ tasks.withType<KotlinCompile> {
     kotlinOptions {
         freeCompilerArgs = listOf("-Xjsr305=strict")
         jvmTarget = "1.8"
+    }
+}
+
+val downloadOpenAPI by tasks.registering() {
+    dependsOn(project(":mock-oauth2-server-intTest").tasks["startSpringApplication"])
+    finalizedBy(project(":mock-oauth2-server-intTest").tasks["stopSpringApplication"])
+    doLast {
+        val openAPIConnection = URL("http://localhost:8023/v2/api-docs").openConnection() as HttpURLConnection
+        var openApiRes = ""
+        openAPIConnection.inputStream.bufferedReader().use { openApiRes = it.readText() }
+        val generatedPagesDir = project.projectDir.toPath().resolve("build/generated-pages").toFile()
+        generatedPagesDir.mkdirs()
+        generatedPagesDir.toPath().resolve("api.json").toFile().writeText(openApiRes)
+        Files.copy(project.projectDir.toPath().resolve("gradle/pages/index.html"), generatedPagesDir.toPath().resolve("index.html"), StandardCopyOption.REPLACE_EXISTING)
     }
 }
