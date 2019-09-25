@@ -26,7 +26,7 @@ class Application {
                     "This is the REST-API Documentation of the Mock OAuth2 Server",
                     version,
                     "",
-                    Contact("Jonathan Lessing", "www.github.com/jlessing-git", ""),
+                    Contact("Jonathan Lessing", "www.github.com/jlessing-git/mock-oauth2-server", ""),
                     "GNU GPLv3", "https://github.com/jlessing-git/mock-oauth2-server/blob/master/LICENSE.txt", emptyList()
             ))
             .select().apis(RequestHandlerSelectors.any()).paths(PathSelectors.any()).build()
