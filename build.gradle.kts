@@ -1,6 +1,4 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
-import java.net.HttpURLConnection
-import java.net.URL
 
 repositories {
     mavenCentral()
@@ -22,15 +20,24 @@ release {
     newVersionCommitMessage = "[Release] - new version commit: "
 }
 
+object Versions {
+    val springBoot = System.getProperty("versions.spring-boot")!!
+    val jjwt = System.getProperty("versions.jjwt")!!
+    val kotlin = System.getProperty("versions.kotlin")!!
+    val jacksonKotlin = System.getProperty("versions.jackson-kotlin")!!
+    val swagger = System.getProperty("versions.swagger")!!
+}
+
 dependencies {
     implementation(kotlin("stdlib"))
-    implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.9.9")
-    implementation("org.jetbrains.kotlin:kotlin-reflect:1.3.41")
-    implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.3.41")
-    implementation("org.springframework.boot:spring-boot-starter-web:2.1.6.RELEASE")
-    implementation("org.springframework.boot:spring-boot-starter-hateoas:2.1.6.RELEASE")
-    implementation("io.jsonwebtoken:jjwt:0.9.1")
-    testImplementation("org.springframework.restdocs:spring-restdocs-mockmvc:2.0.3.RELEASE")
+    implementation("io.springfox:springfox-swagger2:${Versions.swagger}")
+    implementation("com.fasterxml.jackson.module:jackson-module-kotlin:${Versions.jacksonKotlin}")
+    implementation("org.jetbrains.kotlin:kotlin-reflect:${Versions.kotlin}")
+    implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:${Versions.kotlin}")
+    implementation("org.springframework.boot:spring-boot-starter-web:${Versions.springBoot}")
+    implementation("org.springframework.boot:spring-boot-starter-hateoas:${Versions.springBoot}")
+    implementation("io.jsonwebtoken:jjwt:${Versions.jjwt}")
+    testImplementation("org.springframework.boot:spring-boot-starter-test:${Versions.springBoot}")
 }
 
 group = "com.jlessing.orbit.oauth2.server"
