@@ -64,6 +64,6 @@ val downloadOpenAPI by tasks.registering() {
         val generatedPagesDir = project.projectDir.toPath().resolve("build/generated-pages").toFile()
         generatedPagesDir.mkdirs()
         generatedPagesDir.toPath().resolve("api.json").toFile().writeText(openApiRes)
-        Files.copy(project.projectDir.toPath().resolve("gradle/pages/index.html"), generatedPagesDir.toPath().resolve("index.html"), StandardCopyOption.REPLACE_EXISTING)
+        Runtime.getRuntime().exec("npx redoc-cli bundle api.json -o index.html", null, generatedPagesDir)
     }
 }
