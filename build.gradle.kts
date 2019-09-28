@@ -27,16 +27,10 @@ object Versions {
     val kotlin = System.getProperty("versions.kotlin")!!
     val jacksonKotlin = System.getProperty("versions.jackson-kotlin")!!
     val swagger = System.getProperty("versions.swagger")!!
-    val graphql = System.getProperty("versions.graphql")!!
-    val graphqlJavaTools = System.getProperty("versions.graphql-java-tools")!!
 }
 
 dependencies {
     implementation(kotlin("stdlib"))
-    implementation("org.springframework.boot:spring-boot-starter-websocket:${Versions.springBoot}")
-    implementation("com.graphql-java:graphql-java-tools:${Versions.graphqlJavaTools}")
-    implementation("com.graphql-java:graphql-spring-boot-starter:${Versions.graphql}")
-    testImplementation("com.graphql-java:graphql-spring-boot-starter-test:${Versions.graphql}")
     implementation("io.springfox:springfox-swagger2:${Versions.swagger}")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin:${Versions.jacksonKotlin}")
     implementation("org.jetbrains.kotlin:kotlin-reflect:${Versions.kotlin}")

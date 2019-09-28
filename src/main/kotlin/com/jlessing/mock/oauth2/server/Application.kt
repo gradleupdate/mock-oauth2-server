@@ -1,8 +1,11 @@
 package com.jlessing.mock.oauth2.server
 
+import org.apache.catalina.core.ApplicationContext
+import org.springframework.beans.factory.NoSuchBeanDefinitionException
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.runApplication
+import org.springframework.context.ConfigurableApplicationContext
 import org.springframework.context.annotation.Bean
 import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Component
@@ -20,11 +23,15 @@ import springfox.documentation.swagger2.annotations.EnableSwagger2
 @EnableSwagger2
 class Application {
     @Bean
-    fun api(@Value("\${version}") version: String): Docket = Docket(DocumentationType.SWAGGER_2)
+    fun api(appContext: ConfigurableApplicationContext): Docket = Docket(DocumentationType.SWAGGER_2)
             .apiInfo(ApiInfo(
                     "Mock Oauth2 Server API",
                     "This is the REST-API Documentation of the Mock OAuth2 Server",
-                    version,
+                    try {
+                        appContext.getBean("version") as String
+                    } catch (e: NoSuchBeanDefinitionException) {
+                        "latest"
+                    },
                     "",
                     Contact("Jonathan Lessing", "www.github.com/jlessing-git/mock-oauth2-server", ""),
                     "GNU GPLv3", "https://github.com/jlessing-git/mock-oauth2-server/blob/master/LICENSE.txt", emptyList()
