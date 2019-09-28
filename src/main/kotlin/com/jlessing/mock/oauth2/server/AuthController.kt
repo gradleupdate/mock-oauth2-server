@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RestController
-import org.springframework.web.client.HttpServerErrorException
+import org.springframework.web.client.HttpClientErrorException
 import java.net.URI
 import java.nio.charset.StandardCharsets
 import java.util.*
@@ -83,7 +83,9 @@ class AuthController(private val state: State) {
         if (appRegistration.clientSecret != clientSecretVal) throw BadRequesException("Invalid client_secret")
         if (!appRegistration.redirectUrls.contains(redirectUriVal)) throw BadRequesException("Invalid redirect_uri")
         if (!appRegistration.validCodes.keys.contains(codeVal)) throw BadRequesException("Invalid code")
-
+        if ("" in listOf<String>()) {
+            println("jo")
+        }
         logger.info("Creating JWT for User<${appRegistration.validCodes[codeVal]!!.id}>")
         return ResponseEntity.ok()
                 .contentType(MediaType.APPLICATION_JSON_UTF8)
@@ -94,10 +96,14 @@ class AuthController(private val state: State) {
     }
 
     @GetMapping("/me")
-    fun me(httpServletRequest: HttpServletRequest): ResponseEntity<*> = ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON_UTF8).body(ObjectMapper().writeValueAsString(
-            this.state.users.firstOrNull { it.id.toString() == decodeJWT(httpServletRequest.getHeader("Authorization").substring(6).trim()).subject }
-                    ?: throw HttpServerErrorException(HttpStatus.INTERNAL_SERVER_ERROR, "User with Id<${decodeJWT(httpServletRequest.getHeader("Authorization").substring(5).trim()).subject}> not found")
-    )).also { logger.info("Me Endpoint Called as User<${decodeJWT(httpServletRequest.getHeader("Authorization").substring(6).trim()).subject}>") }
+    fun me(httpServletRequest: HttpServletRequest): ResponseEntity<*> =
+            if ("Authorization" !in httpServletRequest.headerNames.toList())
+                throw UnauthorizedException("Authorization header missing")
+            else
+                ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON_UTF8).body(ObjectMapper().writeValueAsString(
+                        this.state.users.firstOrNull { it.id.toString() == decodeJWT(httpServletRequest.getHeader("Authorization").substring(6).trim()).subject }
+                                ?: throw BadRequesException("User with Id<${decodeJWT(httpServletRequest.getHeader("Authorization").substring(5).trim()).subject}> not found")
+                )).also { logger.info("Me Endpoint Called as User<${decodeJWT(httpServletRequest.getHeader("Authorization").substring(6).trim()).subject}>") }
 
     companion object {
         private const val SECRET_KEY = "SecretSigningKey"

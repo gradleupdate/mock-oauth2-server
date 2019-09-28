@@ -73,3 +73,6 @@ data class State(
 
 @ResponseStatus(HttpStatus.BAD_REQUEST)
 class BadRequesException(msg: String) : HttpClientErrorException(HttpStatus.BAD_REQUEST, msg)
+
+@ResponseStatus(HttpStatus.UNAUTHORIZED)
+class UnauthorizedException(msg: String) : HttpClientErrorException(HttpStatus.UNAUTHORIZED, msg)
