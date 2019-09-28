@@ -1,12 +1,10 @@
 package com.jlessing.mock.oauth2.server
 
-import com.coxautodev.graphql.tools.GraphQLQueryResolver
 import org.springframework.hateoas.Resource
 import org.springframework.hateoas.Resources
 import org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo
 import org.springframework.hateoas.mvc.ControllerLinkBuilder.methodOn
 import org.springframework.http.HttpStatus
-import org.springframework.stereotype.Component
 import org.springframework.web.bind.annotation.*
 import org.springframework.web.client.HttpClientErrorException
 

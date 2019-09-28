@@ -1,8 +1,6 @@
 package com.jlessing.mock.oauth2.server
 
-import org.apache.catalina.core.ApplicationContext
 import org.springframework.beans.factory.NoSuchBeanDefinitionException
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.runApplication
 import org.springframework.context.ConfigurableApplicationContext
