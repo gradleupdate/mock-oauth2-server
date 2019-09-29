@@ -97,7 +97,7 @@ class AuthController(private val state: State) {
 
     @GetMapping("/me")
     fun me(httpServletRequest: HttpServletRequest): ResponseEntity<*> =
-            if ("Authorization" !in httpServletRequest.headerNames.toList())
+            if ("authorization" !in httpServletRequest.headerNames.toList().map { it.toLowerCase() })
                 throw UnauthorizedException("Authorization header missing")
             else
                 ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON_UTF8).body(ObjectMapper().writeValueAsString(
